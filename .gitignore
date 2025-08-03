@@ -1,0 +1,12 @@
+node_modules
+dist/**
+build/**
+bun.lock
+bun.lockb
+yarn.lock
+package-lock.json
+
+.DS_Store
+
+.env
+keys/**
