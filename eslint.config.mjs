@@ -23,6 +23,7 @@ export default [
             prettier
         },
         rules: {
+            'linebreak-style': ['error', 'unix'],
             'no-relative-import-paths/no-relative-import-paths': [
                 'error',
                 { allowSameFolder: false, rootDir: 'src', prefix: '@' }

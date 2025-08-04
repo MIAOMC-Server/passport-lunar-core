@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>系统通知</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f5f5f5;
+                margin: 0;
+                padding: 20px;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+            .header {
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }
+            .content {
+                padding: 40px 30px;
+            }
+            .notification-box {
+                background-color: #e7f3ff;
+                border-left: 4px solid #007bff;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 4px;
+            }
+            .footer {
+                background-color: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                color: #6c757d;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>{{serviceName}}</h1>
+                <p>系统通知</p>
+            </div>
+            <div class="content">
+                <h2>{{title}}</h2>
+                <p>{{greeting}}</p>
+
+                <div class="notification-box">
+                    <h3>{{notificationTitle}}</h3>
+                    <p>{{message}}</p>
+                </div>
+
+                {{#if actionRequired}}
+                <p><strong>需要您的操作：</strong>{{actionDescription}}</p>
+                {{/if}} {{#if additionalInfo}}
+                <p><strong>附加信息：</strong>{{additionalInfo}}</p>
+                {{/if}}
+
+                <p>如有任何疑问，请联系我们的客服团队。</p>
+            </div>
+            <div class="footer">
+                <p>此邮件为系统自动发送，请勿回复</p>
+                <p>&copy; {{currentYear}} {{serviceName}}. 保留所有权利。</p>
+            </div>
+        </div>
+    </body>
+</html>

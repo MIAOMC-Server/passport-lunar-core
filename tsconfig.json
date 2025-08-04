@@ -14,7 +14,8 @@
             "@types/*": ["types/*"],
             "@repo/*": ["repo/*"],
             "@config/*": ["config/*"],
-            "@router/*": ["router/*"]
+            "@router/*": ["router/*"],
+            "@templates/*": ["templates/*"]
         },
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
