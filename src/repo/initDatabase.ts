@@ -2,9 +2,9 @@ import { db } from '@util/database/index'
 import { appConfig } from '@util/getConfig'
 
 export const initDatabase = async () => {
-    const prefix = appConfig('APP_DATABASE_TABLE_PREFIX', 'string')
+    const prefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
 
-    const expectedTables = [`users`, `players`, `login_logs`] as const
+    const expectedTables = [`users`, `players`, `login_logs`, `activity_logs`] as const
 
     const expectedTableStructure = {
         users: ['id', 'email', 'username', 'password', 'global_role', 'created_at', 'updated_at'],
@@ -17,10 +17,12 @@ export const initDatabase = async () => {
             'created_at',
             'updated_at'
         ],
-        login_logs: ['id', 'user_id', 'ip_address', 'user_agent', 'created_at']
+        login_logs: ['id', 'user_id', 'ip_address', 'user_agent', 'created_at'],
+        activity_logs: ['id', 'user_id', 'activity_type', 'activity_detail', 'created_at']
     }
 
     const StructureSql = [
+        // 用户表
         `CREATE TABLE IF NOT EXISTS ${prefix}users (
             id INT AUTO_INCREMENT UNIQUE PRIMARY KEY,
             email VARCHAR(255) UNIQUE,
@@ -31,6 +33,7 @@ export const initDatabase = async () => {
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
 
+        // 玩家表
         `CREATE TABLE IF NOT EXISTS ${prefix}players (
             player_uuid VARCHAR(36) UNIQUE PRIMARY KEY,
             player_name VARCHAR(50) NOT NULL,
@@ -43,11 +46,23 @@ export const initDatabase = async () => {
             FOREIGN KEY (user_id) REFERENCES ${prefix}users(id) ON DELETE CASCADE
         ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
 
+        // 登录日志
         `CREATE TABLE IF NOT EXISTS ${prefix}login_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
             ip_address VARCHAR(45) NOT NULL,
             user_agent VARCHAR(255) NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (user_id) REFERENCES ${prefix}users(id) ON DELETE CASCADE
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+
+        // 活动日志
+        `CREATE TABLE IF NOT EXISTS ${prefix}activity_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            activity_type VARCHAR(255) NOT NULL,
+            activity_detail VARCHAR(255) NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
             FOREIGN KEY (user_id) REFERENCES ${prefix}users(id) ON DELETE CASCADE
@@ -57,7 +72,9 @@ export const initDatabase = async () => {
     for (const sql of StructureSql) {
         try {
             await db.query(sql)
-            console.log(`Table structure created/verified successfully`)
+            if (appConfig('DEBUG', 'boolean')) {
+                console.log(`Table structure created/verified successfully`)
+            }
         } catch (error) {
             console.error(`Failed to create table:`, error)
         }
@@ -71,7 +88,9 @@ export const initDatabase = async () => {
         if (!isTableCorrect) {
             console.error(`Table ${prefix}${table} structure is incorrect`)
         } else {
-            console.log(`Table ${prefix}${table} structure is correct`)
+            if (appConfig('DEBUG', 'boolean')) {
+                console.log(`Table ${prefix}${table} structure is correct`)
+            }
         }
     }
 }
@@ -81,14 +100,14 @@ const checkTableColumns = async (
     expectedColumns: string[]
 ): Promise<boolean> => {
     try {
-        const tableExistsResult = await db.query(`SHOW TABLES LIKE ?`, [tableName])
+        const tableExistsResult = await db.query(`SHOW TABLES LIKE '${tableName}'`)
 
         if (!tableExistsResult || tableExistsResult.length === 0) {
             console.error(`Error: Table ${tableName} does not exist`)
             return false
         }
 
-        const columnsResult = await db.query(`DESCRIBE ??`, [tableName])
+        const columnsResult = await db.query(`DESCRIBE ${tableName}`)
 
         if (!columnsResult || !Array.isArray(columnsResult)) {
             console.error(`Error: Unable to describe table ${tableName}`)

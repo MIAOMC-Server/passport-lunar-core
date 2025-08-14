@@ -8,8 +8,10 @@ const redisConfigs = {
     db: appConfig('REDIS_DB', 'number')
 }
 
-const redisUrl = `redis://${redisConfigs.password ? `${redisConfigs.password}@` : ''}${redisConfigs.host}:${redisConfigs.port}/${redisConfigs.db}`
+console.log(redisConfigs)
 
+const redisUrl = `redis://${redisConfigs.password ? `${redisConfigs.password}@` : ''}${redisConfigs.host}:${redisConfigs.port}/${redisConfigs.db}`
+console.log(redisUrl)
 const clientOptions: RedisClientOptions = {
     url: redisUrl,
     // 连接配置优化

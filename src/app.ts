@@ -1,11 +1,12 @@
 import { appRouter } from '@router/index'
-import { connTest } from '@util/database/index'
+import { connTest, redisTest } from '@util/database/index'
 import { appConfig } from '@util/getConfig'
 import cors from 'cors'
 import express from 'express'
 
 // 测试数据库连接
 connTest()
+redisTest()
 
 const app = express()
 
