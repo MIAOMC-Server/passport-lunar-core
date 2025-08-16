@@ -1,4 +1,4 @@
-import { insertUser, readUserInfo } from '@repo/userRepo'
+import { checkUserExists, insertUser, readUserInfo, readUserPasswd } from '@repo/userRepo'
 
 interface CreateUserReturn {
     status: boolean
@@ -13,6 +13,26 @@ export const createUser = async (
     passwd: string
 ): Promise<CreateUserReturn> => {
     try {
+        // 检查邮箱，用户名可用性
+        const checkForExists = await checkUserExists({ email, username })
+
+        const checkresult = checkForExists.data ?? {
+            is_email_exists: false,
+            is_username_exists: false
+        }
+
+        if (!checkForExists.status || !checkForExists.can_do_next) {
+            return {
+                status: false,
+                message:
+                    checkresult.is_email_exists && checkresult.is_username_exists
+                        ? 'Email and username are already taken'
+                        : checkresult.is_email_exists
+                          ? 'Email is already taken'
+                          : 'Username is already taken'
+            }
+        }
+        // 创建新用户(repo:insertUser)
         const newUserId = await insertUser(email, username, passwd)
 
         if (!newUserId.status || newUserId.data?.user_id === null) {
@@ -44,12 +64,17 @@ interface GetUserReturn {
         id: number
         email: string
         username: string
+        nickname: string
         global_role: string
         created_at: number
     }
 }
-export const getUser = async (getType: 'id' | 'email', value: string): Promise<GetUserReturn> => {
+export const getUser = async (
+    getType: 'id' | 'email' | 'username',
+    value: string
+): Promise<GetUserReturn> => {
     try {
+        // 获取用户信息 (repo:readUserInfo)
         const userInfo = await readUserInfo(getType, value)
 
         if (!userInfo.status || !userInfo.data) {
@@ -65,6 +90,7 @@ export const getUser = async (getType: 'id' | 'email', value: string): Promise<G
                 id: userInfo.data.id,
                 email: userInfo.data.email,
                 username: userInfo.data.username,
+                nickname: userInfo.data.nickname,
                 global_role: userInfo.data.global_role,
                 created_at: userInfo.data.created_at
             }
@@ -86,10 +112,13 @@ interface GetUserPasswdReturn {
         password: string
     }
 }
-export const getUserPasswd = async (id: string): Promise<GetUserPasswdReturn> => {
+export const getUserPasswd = async (
+    type: 'username' | 'email',
+    value: string
+): Promise<GetUserPasswdReturn> => {
     try {
-        const userInfo = await readUserInfo('id', id)
-
+        // 获取用户密码 (repo:readUserPasswd)
+        const userInfo = await readUserPasswd(type, value)
         if (!userInfo.status || !userInfo.data) {
             return {
                 status: false,

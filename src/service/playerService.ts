@@ -18,11 +18,13 @@ export const createPlayer = async (
     is_primary: boolean = false
 ): Promise<CreatePlayerReturn> => {
     try {
+        // 检查玩家是否已存在 (playerRepo:readPlayerInfo)
         const playerInfo = await readPlayerInfo(player_uuid)
         if (playerInfo.status) {
             return { status: false, message: 'player already exists' }
         }
 
+        // 插入新玩家 (playerRepo:insertPlayer)
         const repoReturns = await insertPlayer(player_uuid, player_name, user_id, is_primary)
 
         if (!repoReturns.status) {
@@ -62,7 +64,7 @@ interface ProcessPlayerNextReturn {
 }
 
 export const processPlayerNext = async (player_uuid: string): Promise<ProcessPlayerNextReturn> => {
-    //先检查玩家是否绑定
+    // 先检查玩家是否绑定 (playerRepo:isPlayerBinded)
     const playerBinded = await isPlayerBinded(player_uuid)
     if (!playerBinded.status) {
         return {
@@ -82,7 +84,7 @@ export const processPlayerNext = async (player_uuid: string): Promise<ProcessPla
         }
     }
 
-    //获取玩家信息
+    //获取玩家信息 (playerRepo:readPlayerInfo)
     const playerInfo = await readPlayerInfo(player_uuid)
     if (!playerInfo.status) {
         return {
@@ -94,12 +96,12 @@ export const processPlayerNext = async (player_uuid: string): Promise<ProcessPla
         }
     }
 
-    //如果玩家是主要玩家
+    // 如果玩家是主要玩家
     if (playerInfo.data?.is_primary) {
-        //获取关联子玩家
+        // 获取关联子玩家 (playerRepo:readUserBindedPlayers)
         const bindedPlayers = await readUserBindedPlayers('player_uuid', player_uuid)
 
-        //错误处理
+        // 错误处理
         if (bindedPlayers.status === false) {
             return {
                 status: false,

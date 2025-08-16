@@ -86,7 +86,7 @@ verifierRouter.get('/verify', async (req, res) => {
                 break
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             return res.status(400).json({ status: false, message: 'Verification failed: ' + error })
         }
 

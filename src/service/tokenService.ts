@@ -4,6 +4,9 @@ import { cache } from '@util/database'
 import { appConfig } from '@util/getConfig'
 import { genToken } from '@util/token'
 
+/* ===================================================================
+ * Start Bind Token*/
+
 interface GenBindTokenReturn {
     status: boolean
     message?: string
@@ -50,7 +53,7 @@ export const genBindToken = async (
             }
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }
@@ -73,12 +76,18 @@ export const verifyBindToken = async (token: string): Promise<VerifyBindTokenRet
         await logActivity(null, 'verify', JSON.stringify({ token: token, data: bindData }))
         return { status: true, data: { bindData: JSON.parse(bindData) } }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }
     }
 }
+
+/* End Bind Token
+ * ===================================================================*/
+
+/* ====================================================================
+ * Start Introspect Token*/
 
 interface genIntrospectTokenReturn {
     status: boolean
@@ -129,7 +138,7 @@ export const genIntrospectToken = async (
             }
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }
@@ -154,9 +163,12 @@ export const verifyIntrospectToken = async (token: string): Promise<VerifyIntosp
 
         return { status: true, data: userInfo.data }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }
     }
 }
+
+/* End Introspect Token
+ * ===================================================================*/

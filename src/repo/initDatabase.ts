@@ -7,7 +7,16 @@ export const initDatabase = async () => {
     const expectedTables = [`users`, `players`, `login_logs`, `activity_logs`] as const
 
     const expectedTableStructure = {
-        users: ['id', 'email', 'username', 'password', 'global_role', 'created_at', 'updated_at'],
+        users: [
+            'id',
+            'email',
+            'username',
+            'nickname',
+            'password',
+            'global_role',
+            'created_at',
+            'updated_at'
+        ],
         players: [
             'player_uuid',
             'player_name',
@@ -27,6 +36,7 @@ export const initDatabase = async () => {
             id INT AUTO_INCREMENT UNIQUE PRIMARY KEY,
             email VARCHAR(255) UNIQUE,
             username VARCHAR(50) NOT NULL,
+            nickname VARCHAR(50),
             password VARCHAR(255),
             global_role VARCHAR(50) NOT NULL DEFAULT 'default',
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

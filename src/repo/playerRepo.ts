@@ -38,7 +38,7 @@ export const readPlayerInfo = async (player_uuid: string): Promise<ReadPlayerInf
             }
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             console.error('Error reading player info:', error)
             return {
                 status: false,
@@ -82,7 +82,7 @@ export const insertPlayer = async (
             status: true
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             console.error('Error inserting player:', error)
             return {
                 status: false,
@@ -109,7 +109,7 @@ export const isPlayerBinded = async (player_uuid: string): Promise<IsPlayerBinde
         }
         return { status: true, is_bind: false, message: 'Player is not binded' }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             console.error('Error checking player bind:', error)
             return {
                 status: false,
@@ -177,7 +177,7 @@ export const readUserBindedPlayers = async (
             )
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean')) {
             console.error('Error reading user binded players:', error)
             return {
                 status: false,
