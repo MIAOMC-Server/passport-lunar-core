@@ -1,4 +1,4 @@
-## MIAOMC PASSPORT Service Backend (Lunar Core)
+## MIAOMC PASSPORT Service Backend (Lunar Core - 月芯枢纽)
 
 当前处于开发阶段，如果您希望参与共享，可提交 PR 或 Issues。
 
