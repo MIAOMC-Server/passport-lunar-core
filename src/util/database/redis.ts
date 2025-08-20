@@ -8,10 +8,7 @@ const redisConfigs = {
     db: appConfig('REDIS_DB', 'number')
 }
 
-console.log(redisConfigs)
-
-const redisUrl = `redis://${redisConfigs.password ? `${redisConfigs.password}@` : ''}${redisConfigs.host}:${redisConfigs.port}/${redisConfigs.db}`
-console.log(redisUrl)
+const redisUrl = `redis://default:${redisConfigs.password ? `${redisConfigs.password}@` : ''}${redisConfigs.host}:${redisConfigs.port}/${redisConfigs.db}`
 const clientOptions: RedisClientOptions = {
     url: redisUrl,
     // 连接配置优化
@@ -100,6 +97,16 @@ class Redis {
             await this.client.del(key)
         } catch (error) {
             console.error('Redis DEL error:', error)
+            throw error
+        }
+    }
+
+    public async renew(key: string, expireIn: number): Promise<void> {
+        await this.ensureConnected()
+        try {
+            await this.client.expire(key, expireIn)
+        } catch (error) {
+            console.error('Redis RENEW error:', error)
             throw error
         }
     }

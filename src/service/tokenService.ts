@@ -4,6 +4,11 @@ import { cache } from '@util/database'
 import { appConfig } from '@util/getConfig'
 import { genToken } from '@util/token'
 
+/*
+ * 代办:
+ *   1.拆分缓存逻辑到Repo中
+ */
+
 /* ===================================================================
  * Start Bind Token*/
 
@@ -89,6 +94,8 @@ export const verifyBindToken = async (token: string): Promise<VerifyBindTokenRet
 /* ====================================================================
  * Start Introspect Token*/
 
+const introspectTokenExpireIn = Number(appConfig('TOKEN_INTROSPECT_EXPIRE', 'number'))
+
 interface genIntrospectTokenReturn {
     status: boolean
     message?: string
@@ -120,8 +127,8 @@ export const genIntrospectToken = async (
         }
 
         // IntrospectToken 10 分钟到期
-        const expire_at = Math.floor(Date.now() / 1000) + 60 * 10
-        await cache.set(`IT_${newToken.data.token}`, String(uid), 60 * 10)
+        const expire_at = Math.floor(Date.now() / 1000) + introspectTokenExpireIn
+        await cache.set(`IT_${newToken.data.token}`, String(uid), introspectTokenExpireIn)
 
         await logActivity(
             String(uid),
@@ -133,7 +140,7 @@ export const genIntrospectToken = async (
             status: true,
             data: {
                 relative_with: uid,
-                token: newToken.data.token,
+                token: `IT_${newToken.data.token}`,
                 expire_at
             }
         }
@@ -147,26 +154,73 @@ export const genIntrospectToken = async (
 
 interface VerifyIntospectTokenReturn {
     status: boolean
+    is_renewed: boolean
     message?: string
     data?: object
 }
 export const verifyIntrospectToken = async (token: string): Promise<VerifyIntospectTokenReturn> => {
+    if (!token.startsWith('IT_')) {
+        return { status: false, is_renewed: false, message: '无效的 introspect 令牌' }
+    }
     try {
-        const introspectToken = await cache.get(`IT_${token}`)
+        const introspectToken = await cache.get(`${token}`)
         if (!introspectToken) {
-            return { status: false, message: '无效的 introspect 令牌' }
+            return { status: false, is_renewed: false, message: '无效的 introspect 令牌' }
         }
         const userInfo = await getUser('id', introspectToken)
         if (!userInfo.status || !userInfo.data) {
-            return { status: false, message: '用户不存在或已被删除' }
+            return { status: false, is_renewed: false, message: '用户不存在或已被删除' }
         }
 
-        return { status: true, data: userInfo.data }
+        // 代办: 设置一个阈值，有效期小于阈值才执行Token续期
+        const renewResult = await renewIntrospectToken(token)
+        if (renewResult.status) {
+            return { status: true, is_renewed: true, data: userInfo.data }
+        }
+
+        return {
+            status: true,
+            is_renewed: false,
+            message: 'Error when process Token renewal',
+            data: userInfo.data
+        }
     } catch (error) {
         if (appConfig('DEBUG', 'boolean')) {
-            return { status: false, message: 'internal error: ' + error }
+            return { status: false, is_renewed: false, message: 'internal error: ' + error }
         }
-        return { status: false, message: 'Internal Error' }
+        return { status: false, is_renewed: false, message: 'Internal Error' }
+    }
+}
+
+interface RenewIntrospectTokenReturn {
+    status: boolean
+    need_refresh: boolean
+    message?: string
+    data?: {
+        token: string
+        expire_at: number
+    }
+}
+
+export const renewIntrospectToken = async (token: string): Promise<RenewIntrospectTokenReturn> => {
+    try {
+        const expire_at = Math.floor(Date.now() / 1000) + introspectTokenExpireIn
+        // 传入 TTL（秒）
+        await cache.renew(token, introspectTokenExpireIn)
+
+        return {
+            status: true,
+            need_refresh: false,
+            data: {
+                token,
+                expire_at
+            }
+        }
+    } catch (err) {
+        if (appConfig('DEBUG', 'boolean')) {
+            return { status: false, need_refresh: false, message: 'internal error: ' + err }
+        }
+        return { status: false, need_refresh: false, message: 'Internal Error' }
     }
 }
 

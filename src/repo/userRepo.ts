@@ -19,13 +19,20 @@ export const insertUser = async (
     password: string
 ): Promise<InsertUserReturn> => {
     try {
-        const processedPassword = (await hashPassword(password)).data
+        const processedPassword = await hashPassword(password)
+        if (!processedPassword.status) {
+            return {
+                status: false,
+                message: 'Failed to hash password'
+            }
+        }
 
+        const hashedPassword = processedPassword.data
         const sql = `INSERT INTO ${tablePrefix}users (email, username, password, global_role) VALUES (?, ?, ?, ?)`
         const result = await db.query(sql, [
             email.trim().toLowerCase(),
             username.trim(),
-            processedPassword,
+            hashedPassword,
             'default'
         ])
 
