@@ -64,7 +64,7 @@ export const insertToken = async (
             console.error('Error inserting introspect token:', err)
             return { status: false, message: `insertIntrospectToken: ${err}` }
         }
-        return { status: false, message: 'Faild to insert introspect token' }
+        return { status: false, message: 'Failed to insert introspect token' }
     }
 }
 

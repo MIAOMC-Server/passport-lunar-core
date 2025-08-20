@@ -99,7 +99,7 @@ export const verifyBindToken = async (token: string): Promise<VerifyBindTokenRet
 
 const introspectTokenExpireIn = Number(appConfig('TOKEN_INTROSPECT_EXPIRE', 'number'))
 
-interface genIntrospectTokenReturn {
+interface GenIntrospectTokenReturn {
     status: boolean
     message?: string
     data?: {
@@ -115,7 +115,7 @@ export const genIntrospectToken = async (
     recursion?: {
         times?: number
     }
-): Promise<genIntrospectTokenReturn> => {
+): Promise<GenIntrospectTokenReturn> => {
     try {
         const newToken = await genToken(32)
         if (!newToken.status || !newToken.data) {
@@ -164,14 +164,16 @@ export const genIntrospectToken = async (
     }
 }
 
-interface VerifyIntospectTokenReturn {
+interface VerifyIntrospectTokenReturn {
     status: boolean
     is_renewed: boolean
     message?: string
     data?: object
 }
 // 已完成拆分
-export const verifyIntrospectToken = async (token: string): Promise<VerifyIntospectTokenReturn> => {
+export const verifyIntrospectToken = async (
+    token: string
+): Promise<VerifyIntrospectTokenReturn> => {
     if (!token.startsWith('IT_')) {
         return { status: false, is_renewed: false, message: 'Invalid Token' }
     }
