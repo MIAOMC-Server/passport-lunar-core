@@ -179,7 +179,7 @@ export const readUserInfo = async (
     }
 }
 
-interface readUserPasswdReturn {
+interface ReadUserPasswdReturn {
     status: boolean
     message?: string
     data?: {
@@ -191,7 +191,7 @@ interface readUserPasswdReturn {
 export const readUserPasswd = async (
     readType: 'id' | 'username' | 'email',
     value: string
-): Promise<readUserPasswdReturn> => {
+): Promise<ReadUserPasswdReturn> => {
     try {
         let sql: string
         switch (readType) {

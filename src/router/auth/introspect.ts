@@ -1,26 +1,40 @@
-import { verifyIntrospectToken } from '@service/tokenService'
+import { introspectMiddleware } from '@middleware/authMid'
 import express from 'express'
 
 const introspectRouter = express.Router()
 
-introspectRouter.post('/introspect', async (req, res) => {
-    if (!req.body || !req.body.token) {
-        return res.status(400).json({ status: false, message: 'No token provided' })
-    }
+introspectRouter.use(introspectMiddleware)
 
-    const token = req.body.token
+introspectRouter.post('/introspect', async (_, res) => {
+    const middlewareRes = res.locals.middleware
 
-    const result = await verifyIntrospectToken(token)
-    if (!result.status || !result.data) {
-        return res.status(400).json({
+    if (!middlewareRes) {
+        res.status(400).json({
             status: false,
-            message: result.message || 'Error when verify introspect token'
+            message: middlewareRes.message || 'No valid token provided'
         })
+        return
     }
 
-    return res.status(200).json({
-        status: true,
-        data: result.data
+    if (!middlewareRes.status) {
+        res.status(401).json({
+            status: false,
+            message: middlewareRes.message || 'Token is invalid'
+        })
+        return
+    }
+
+    if (middlewareRes.status && middlewareRes.data) {
+        return res.status(200).json({
+            status: true,
+            data: { ...middlewareRes.data, is_renewed: middlewareRes.is_renewed }
+        })
+        return
+    }
+
+    return res.status(500).json({
+        status: false,
+        message: 'Internal server error'
     })
 })
 

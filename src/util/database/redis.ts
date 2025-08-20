@@ -77,7 +77,28 @@ class Redis {
         }
     }
 
-    public async set(key: string, value: string, expireIn?: number): Promise<void> {
+    public async getTTL(key: string): Promise<number | null> {
+        await this.ensureConnected()
+        try {
+            return await this.client.ttl(key)
+        } catch (error) {
+            console.error('Redis TTL error:', error)
+            throw error
+        }
+    }
+
+    public async getJSON(key: string): Promise<string | null> {
+        await this.ensureConnected()
+        try {
+            const result = await this.client.get(key)
+            return result ? JSON.parse(result) : null
+        } catch (error) {
+            console.error('Redis GET error:', error)
+            throw error
+        }
+    }
+
+    public async set(key: string, value: string, expireIn?: number | null): Promise<void> {
         await this.ensureConnected()
         try {
             if (expireIn) {
@@ -111,9 +132,24 @@ class Redis {
         }
     }
 
+    public async sAdd(key: string, member: string | string[]): Promise<void> {
+        await this.ensureConnected()
+        await this.client.sAdd(key, member)
+    }
+
+    public async sMembers(key: string): Promise<string[]> {
+        await this.ensureConnected()
+        return await this.client.sMembers(key)
+    }
+
+    public async sRem(key: string, member: string | string[]): Promise<void> {
+        await this.ensureConnected()
+        await this.client.sRem(key, member)
+    }
+
     // 新增方法：检查连接状态
     public isClientConnected(): boolean {
-        return this.isConnected && this.client.isOpen
+        return this.client.isOpen
     }
 
     // 新增方法：获取 Redis 信息
