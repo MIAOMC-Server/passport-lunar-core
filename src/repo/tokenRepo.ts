@@ -1,7 +1,43 @@
 import { cache } from '@util/database'
 import { appConfig } from '@util/getConfig'
 
-interface ReadToken {
+const introspectTokenExpireIn = Number(appConfig('TOKEN_INTROSPECT_EXPIRE', 'number'))
+
+interface ReadTokenReturn {
+    status: boolean
+    message?: string
+    data?: object
+}
+
+export const readToken = async (token: string): Promise<ReadTokenReturn> => {
+    try {
+        const data = await cache.get(`${token}`)
+
+        if (!data) {
+            return { status: false, message: 'Token not found' }
+        }
+
+        const ttl = await cache.getTTL(`${token}`)
+
+        const structureReturnData = {
+            ...JSON.parse(data),
+            ttl: ttl ? ttl : null
+        }
+
+        return {
+            status: true,
+            data: structureReturnData
+        }
+    } catch (err) {
+        if (appConfig('DEBUG', 'boolean')) {
+            console.error('Error reading introspect token:', err)
+            return { status: false, message: `readIntrospectToken: ${err}` }
+        }
+        return { status: false, message: 'Failed to read introspect token' }
+    }
+}
+
+interface ReadIntrospectTokenReturn {
     status: boolean
     message?: string
     data?: {
@@ -11,27 +47,24 @@ interface ReadToken {
     }
 }
 
-export const readToken = async (token: string): Promise<ReadToken> => {
+export const readIntrospectToken = async (token: string): Promise<ReadIntrospectTokenReturn> => {
     try {
-        const data = await cache.get(`${token}`)
-
-        if (!data) {
-            return { status: false, message: 'Token not found' }
+        const dataRaw = await readToken(token)
+        if (!dataRaw.status || !dataRaw.data) {
+            return { status: false, message: dataRaw.message || 'Token not found' }
         }
 
-        const ttl = await cache.getTTL(`${token}`)
-        if (!ttl) {
-            return { status: false, message: 'Failed to get token TTL' }
+        const data = dataRaw.data as { ttl: number | null; related_users_id: string }
+        if (!data.ttl || !data.related_users_id) {
+            return { status: false, message: 'Failed to get token details' }
         }
-
-        const is_need_renew = ttl < 60 * 3 ? true : false
 
         return {
             status: true,
             data: {
-                exp: ttl,
-                need_renewal: is_need_renew,
-                related_users_id: data
+                exp: data.ttl,
+                need_renewal: data.ttl < 60 * 3,
+                related_users_id: data.related_users_id
             }
         }
     } catch (err) {
@@ -42,6 +75,38 @@ export const readToken = async (token: string): Promise<ReadToken> => {
         return { status: false, message: 'Failed to read introspect token' }
     }
 }
+
+interface ReadBindTokenReturn {
+    status: boolean
+    message?: string
+    data?: {
+        player_uuid: string
+    }
+}
+
+export const readBindToken = async (token: string): Promise<ReadBindTokenReturn> => {
+    try {
+        const dataRaw = await readToken(token)
+        if (!dataRaw.status || !dataRaw.data) {
+            return { status: false, message: dataRaw.message || 'Token not found' }
+        }
+
+        const { player_uuid } = dataRaw.data as { player_uuid: string }
+        if (!player_uuid) {
+            return { status: false, message: 'Failed to get player UUID' }
+        }
+
+        return { status: true, data: { player_uuid } }
+    } catch (err) {
+        if (appConfig('DEBUG', 'boolean')) {
+            console.error('Error reading bind token:', err)
+            return { status: false, message: `readBindToken: ${err}` }
+        }
+        return { status: false, message: 'Failed to read bind token' }
+    }
+}
+
+//=======================================================
 
 interface InsertTokenReturn {
     status: boolean
@@ -76,6 +141,14 @@ export const insertIntrospectToken = async (
     return insertToken(it, uid, uid, exp)
 }
 
+export const insertBindToken = async (
+    it: string,
+    uid: string,
+    exp: number | null = null
+): Promise<InsertTokenReturn> => {
+    return insertToken(it, uid, uid, exp)
+}
+
 interface CheckTokenExistsReturn {
     status: boolean
     can_do_next: boolean
@@ -98,5 +171,37 @@ export const checkTokenExists = async (token: string): Promise<CheckTokenExistsR
             }
         }
         return { status: false, can_do_next: false, message: 'Error when checking tokens' }
+    }
+}
+
+interface RenewIntrospectTokenReturn {
+    status: boolean
+    need_refresh: boolean
+    message?: string
+    data?: {
+        token: string
+        expire_at: number
+    }
+}
+
+export const renewIntrospectToken = async (token: string): Promise<RenewIntrospectTokenReturn> => {
+    try {
+        const expire_at = Math.floor(Date.now() / 1000) + introspectTokenExpireIn
+        // 传入 TTL（秒）
+        await cache.renew(token, introspectTokenExpireIn)
+
+        return {
+            status: true,
+            need_refresh: false,
+            data: {
+                token,
+                expire_at
+            }
+        }
+    } catch (err) {
+        if (appConfig('DEBUG', 'boolean')) {
+            return { status: false, need_refresh: false, message: 'internal error: ' + err }
+        }
+        return { status: false, need_refresh: false, message: 'Internal Error' }
     }
 }

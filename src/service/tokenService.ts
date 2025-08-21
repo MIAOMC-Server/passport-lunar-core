@@ -1,16 +1,17 @@
 import { logActivity } from '@repo/commonRepo'
-import { checkTokenExists, insertIntrospectToken, readToken } from '@repo/tokenRepo'
+import {
+    checkTokenExists,
+    insertBindToken,
+    insertIntrospectToken,
+    readBindToken,
+    readIntrospectToken,
+    renewIntrospectToken
+} from '@repo/tokenRepo'
 import { getUser } from '@service/userService'
-import { cache } from '@util/database'
 import { appConfig } from '@util/getConfig'
 import { genToken } from '@util/token'
 
 const max_recursion_times = Number(appConfig('MAX_TRY_TIMES', 'number'))
-
-/*
- * 代办:
- *   1.拆分缓存逻辑到Repo中
- */
 
 /* ===================================================================
  * Start Bind Token*/
@@ -32,12 +33,12 @@ export const genBindToken = async (
     try {
         const newBindToken = await genToken(32)
         if (!newBindToken.status || !newBindToken.data) {
-            return { status: false, message: '生成绑定令牌失败' }
+            return { status: false, message: 'Error when generating bind token' }
         }
         // 如果令牌已存在，则重执行递归操作重新生成
-        if (await cache.get(`BT_${newBindToken.data.token}`)) {
+        if (!(await checkTokenExists(`BT_${newBindToken.data.token}`)).can_do_next) {
             if (recursion?.times && recursion.times > 5) {
-                return { status: false, message: '生成绑定令牌失败' }
+                return { status: false, message: 'Error when generating bind token' }
             }
             return genBindToken(bindData, { times: (recursion?.times || 0) + 1 })
         }
@@ -45,7 +46,7 @@ export const genBindToken = async (
         const expire_at = Math.floor(Date.now() / 1000) + 60 * 30
 
         // 缓存 token 及绑定数据
-        await cache.set(`BT_${newBindToken.data.token}`, JSON.stringify(bindData), 60 * 30)
+        await insertBindToken(`BT_${newBindToken.data.token}`, JSON.stringify(bindData), 60 * 30)
 
         await logActivity(
             null,
@@ -77,12 +78,15 @@ interface VerifyBindTokenReturn {
 }
 export const verifyBindToken = async (token: string): Promise<VerifyBindTokenReturn> => {
     try {
-        const bindData = await cache.get(`BT_${token}`)
-        if (!bindData) {
+        const bindDataRaw = await readBindToken(`BT_${token}`)
+        if (!bindDataRaw.status || !bindDataRaw.data?.player_uuid) {
             return { status: false, message: '无效的绑定令牌' }
         }
+
+        const bindData = bindDataRaw.data
         await logActivity(null, 'verify', JSON.stringify({ token: token, data: bindData }))
-        return { status: true, data: { bindData: JSON.parse(bindData) } }
+
+        return { status: true, data: { bindData } }
     } catch (error) {
         if (appConfig('DEBUG', 'boolean')) {
             return { status: false, message: 'internal error: ' + error }
@@ -178,7 +182,7 @@ export const verifyIntrospectToken = async (
         return { status: false, is_renewed: false, message: 'Invalid Token' }
     }
 
-    const verifiedToken = await readToken(token)
+    const verifiedToken = await readIntrospectToken(token)
     if (!verifiedToken.status || !verifiedToken.data?.related_users_id) {
         return { status: false, is_renewed: false, message: 'Invalid Token' }
     }
@@ -206,38 +210,6 @@ export const verifyIntrospectToken = async (
                 : 'Error when process Token renewal'
             : 'Token is still valid',
         data: userInfo.data
-    }
-}
-
-interface RenewIntrospectTokenReturn {
-    status: boolean
-    need_refresh: boolean
-    message?: string
-    data?: {
-        token: string
-        expire_at: number
-    }
-}
-
-export const renewIntrospectToken = async (token: string): Promise<RenewIntrospectTokenReturn> => {
-    try {
-        const expire_at = Math.floor(Date.now() / 1000) + introspectTokenExpireIn
-        // 传入 TTL（秒）
-        await cache.renew(token, introspectTokenExpireIn)
-
-        return {
-            status: true,
-            need_refresh: false,
-            data: {
-                token,
-                expire_at
-            }
-        }
-    } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
-            return { status: false, need_refresh: false, message: 'internal error: ' + err }
-        }
-        return { status: false, need_refresh: false, message: 'Internal Error' }
     }
 }
 
