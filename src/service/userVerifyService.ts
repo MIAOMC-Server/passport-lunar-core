@@ -1,5 +1,5 @@
 import { getVerifierToken } from '@service/verifierTokenService'
-import { isExpired } from '@util/commonUtils'
+import { checkEmpty, isExpired } from '@util/commonUtils'
 import { appConfig } from '@util/getConfig'
 import { verifierDecryptor } from '@util/verifierDecryptor'
 import crypto from 'crypto'
@@ -25,19 +25,21 @@ export const verifierService = async (
         }
 
         if (
-            !result.data ||
-            !result.data.plainBase64 ||
-            !result.data.plainJSON ||
-            !result.data.plainJSON.token_uuid ||
-            !result.data.plainJSON.player_uuid ||
-            !result.data.plainJSON.action ||
-            !result.data.plainJSON.expire_at
-        ) {
+            checkEmpty(
+                result.data,
+                result.data!.plainBase64,
+                result.data!.plainJSON,
+                result.data!.plainJSON.token_uuid,
+                result.data!.plainJSON.player_uuid,
+                result.data!.plainJSON.action,
+                result.data!.plainJSON.expire_at
+            ).status
+        )
             return { status: false, message: 'Decryption result is incomplete' }
-        }
 
-        const plainBase64 = result.data.plainBase64
-        const plainJSON = result.data.plainJSON
+        const data = result.data!
+        const plainBase64 = data.plainBase64
+        const plainJSON = data.plainJSON
 
         const remoteToken = await getVerifierToken(plainJSON.token_uuid)
 

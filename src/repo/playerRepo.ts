@@ -190,3 +190,31 @@ export const readUserBindedPlayers = async (
         }
     }
 }
+
+interface UnbindPlayerReturn {
+    status: boolean
+    message?: string
+}
+// 解绑玩家
+export const unbindPlayer = async (player_uuid: string): Promise<UnbindPlayerReturn> => {
+    try {
+        const sql = `DELETE FROM ${tablePrefix}players WHERE player_uuid = ?`
+        const result = await db.query(sql, [player_uuid])
+        if (result.affectedRows === 0) {
+            return { status: false, message: 'Player not found' }
+        }
+        return { status: true }
+    } catch (error) {
+        if (appConfig('DEBUG', 'boolean')) {
+            console.error('Error unbinding player:', error)
+            return {
+                status: false,
+                message: `Error unbinding player: ${error}`
+            }
+        }
+        return {
+            status: false,
+            message: 'Error unbinding player'
+        }
+    }
+}

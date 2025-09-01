@@ -8,6 +8,25 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// 邮件服务返回接口
+interface MailServiceReturn {
+    status: boolean
+    message?: string
+    data?: {
+        sent: boolean
+        recipient: string
+        template?: string
+    }
+}
+
+interface MailConnectionReturn {
+    status: boolean
+    message?: string
+    data?: {
+        connected: boolean
+    }
+}
+
 class MailService {
     private templateCache: Map<string, string> = new Map()
 
@@ -75,7 +94,7 @@ class MailService {
         templateName: T,
         data: TemplateDataMap[T],
         subject?: string
-    ): Promise<boolean> {
+    ): Promise<MailServiceReturn> {
         try {
             // 加载模板
             const template = await this.loadTemplate(templateName)
@@ -109,14 +128,44 @@ class MailService {
             }
 
             // 发送邮件
-            return await mailer.send({
+            const result = await mailer.send({
                 to: email,
                 subject: subject || defaultSubject,
                 html
             })
+
+            if (result) {
+                return {
+                    status: true,
+                    data: {
+                        sent: true,
+                        recipient: email,
+                        template: templateName
+                    }
+                }
+            } else {
+                return {
+                    status: false,
+                    message: `Failed to send ${templateName} email to ${email}`,
+                    data: {
+                        sent: false,
+                        recipient: email,
+                        template: templateName
+                    }
+                }
+            }
         } catch (error) {
             console.error(`Failed to send ${templateName} email to ${email}:`, error)
-            return false
+            return {
+                status: false,
+                message:
+                    error instanceof Error ? error.message : `Failed to send ${templateName} email`,
+                data: {
+                    sent: false,
+                    recipient: email,
+                    template: templateName
+                }
+            }
         }
     }
 
@@ -125,10 +174,10 @@ class MailService {
      */
     async sendVerificationCode(
         email: string,
-        username: string,
+        username: string = '用户',
         verificationCode: string,
         expirationMinutes: number = 15
-    ): Promise<boolean> {
+    ): Promise<MailServiceReturn> {
         return this.sendMail(email, 'verificationCode', {
             serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
             currentYear: new Date().getFullYear(),
@@ -146,7 +195,7 @@ class MailService {
         username: string,
         resetLink: string,
         expirationHours: number = 24
-    ): Promise<boolean> {
+    ): Promise<MailServiceReturn> {
         return this.sendMail(email, 'passwordReset', {
             serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
             currentYear: new Date().getFullYear(),
@@ -170,7 +219,7 @@ class MailService {
             actionDescription?: string
             additionalInfo?: string
         }
-    ): Promise<boolean> {
+    ): Promise<MailServiceReturn> {
         return this.sendMail(email, 'notification', {
             serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
             currentYear: new Date().getFullYear(),
@@ -192,8 +241,36 @@ class MailService {
     /**
      * 验证邮件服务连接
      */
-    async verifyConnection(): Promise<boolean> {
-        return await mailer.verifyConnection()
+    async verifyConnection(): Promise<MailConnectionReturn> {
+        try {
+            const result = await mailer.verifyConnection()
+
+            if (result) {
+                return {
+                    status: true,
+                    data: {
+                        connected: true
+                    }
+                }
+            } else {
+                return {
+                    status: false,
+                    message: 'Failed to connect to mail service',
+                    data: {
+                        connected: false
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Mail service connection error:', error)
+            return {
+                status: false,
+                message: error instanceof Error ? error.message : 'Mail service connection failed',
+                data: {
+                    connected: false
+                }
+            }
+        }
     }
 }
 
@@ -210,6 +287,3 @@ export const sendNotification = mailService.sendNotification.bind(mailService)
 
 // 导出邮件服务实例（用于高级操作）
 export { mailService }
-
-// 导出类型
-export type { TemplateDataMap, TemplateName } from '../templates/email/types.js'

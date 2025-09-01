@@ -205,3 +205,55 @@ export const renewIntrospectToken = async (token: string): Promise<RenewIntrospe
         return { status: false, need_refresh: false, message: 'Internal Error' }
     }
 }
+
+interface InsertMailVerificationCodeReturn {
+    status: boolean
+    message?: string
+}
+export const insertMailVerificationCode = async (
+    email: string,
+    code: string
+): Promise<InsertMailVerificationCodeReturn> => {
+    try {
+        // 插入邮箱验证码到缓存，5分钟
+        await cache.set(`MT_${code}`, email, 60 * 50)
+        return { status: true }
+    } catch (err) {
+        return {
+            status: false,
+            message: appConfig('DEBUG', 'boolean')
+                ? (err as string)
+                : 'Error when insert verify code'
+        }
+    }
+}
+
+interface ReadMailVerificationCodeReturn {
+    status: boolean
+    message?: string
+    data?: { email: string }
+}
+export const readMailVerificationCode = async (
+    code: string
+): Promise<ReadMailVerificationCodeReturn> => {
+    try {
+        const email = await cache.get(`MT_${code}`)
+        if (!email) {
+            return {
+                status: false,
+                message: 'Verification code not found'
+            }
+        }
+        return {
+            status: true,
+            data: { email }
+        }
+    } catch (err) {
+        return {
+            status: false,
+            message: appConfig('DEBUG', 'boolean')
+                ? (err as string)
+                : 'Error when reading verify code'
+        }
+    }
+}
