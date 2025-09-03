@@ -1,5 +1,9 @@
+import { insertMailVerificationCode, readMailVerificationCode } from '@repo/tokenRepo'
+import { sendVerificationCode } from '@service/mailService'
 import { comparePassword } from '@service/passwordService'
 import { createUser, getUserPasswd } from '@service/userService'
+import { checkEmpty } from '@util/commonUtils'
+import { genToken } from '@util/token'
 
 interface VerifyUserPasswdReturn {
     status: boolean
@@ -70,6 +74,52 @@ export const registerUser = async (
         status: true,
         data: {
             user_id: user.data.user_id
+        }
+    }
+}
+
+interface VerifyUserEmail {
+    status: boolean
+    message?: string
+}
+
+export const verifyUserEmail = async (
+    type: 'verify' | 'send-code',
+    email: string,
+    username: string,
+    code?: string
+): Promise<VerifyUserEmail> => {
+    if (checkEmpty(type, email).status) return { status: false, message: 'Invalid parameters' }
+
+    switch (type) {
+        case 'verify': {
+            if (checkEmpty(code).status) return { status: false, message: 'Invalid parameters' }
+
+            const checkCodeResult = await readMailVerificationCode(code!)
+            if (!checkCodeResult.status || checkCodeResult.data?.email !== email)
+                return { status: false, message: 'Invalid verification code' }
+
+            return { status: true }
+            break
+        }
+        case 'send-code': {
+            const verifyCode = await genToken(6)
+            if (!verifyCode.status || !verifyCode.data?.token)
+                return { status: false, message: 'Failed to generate verification code' }
+
+            const insertCodeResult = await insertMailVerificationCode(email, verifyCode.data.token)
+            if (!insertCodeResult.status)
+                return { status: false, message: 'Failed to insert verification code' }
+
+            const sendCodeResult = await sendVerificationCode(
+                email,
+                username,
+                verifyCode.data.token,
+                5
+            )
+            if (!sendCodeResult.status) return { status: false, message: 'Email sending failed' }
+
+            return { status: true }
         }
     }
 }

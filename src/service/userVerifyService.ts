@@ -9,6 +9,7 @@ export interface VerifierServiceResponse {
     message?: string
     data?: {
         player_uuid: string
+        player_name: string
         action: string
     }
 }
@@ -73,6 +74,7 @@ export const verifierService = async (
             status: true,
             data: {
                 player_uuid: plainJSON.player_uuid,
+                player_name: plainJSON.player_name,
                 action: plainJSON.action
             }
         }
