@@ -1,5 +1,6 @@
 import { db } from '@util/database'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 
 const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
 
@@ -14,6 +15,6 @@ export const logActivity = async (
             [userId, activityType, activityDetail]
         )
     } catch (error) {
-        console.error(`Failed to insert activity log:`, error)
+        logger.error('repo/ActivityLogsRepo', 'Failed to insert activity log', error)
     }
 }

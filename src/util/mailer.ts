@@ -1,5 +1,6 @@
 import type { MailConfig, MailOptions } from '@templates/email/types'
 import { appConfig } from '@util/getConfig.js'
+import { logger } from '@util/logger'
 import nodemailer, { type Transporter } from 'nodemailer'
 
 class Mailer {
@@ -42,8 +43,8 @@ class Mailer {
                 }
             })
         } catch (error) {
-            console.error('Failed to initialize mail transporter:', error)
-            throw new Error('邮件传输器初始化失败')
+            logger.error('service/MailService', 'Failed to initialize mail transporter:', error)
+            process.exit(1)
         }
     }
 
@@ -59,7 +60,11 @@ class Mailer {
             await this.transporter.verify()
             return true
         } catch (error) {
-            console.error('Mail service connection verification failed:', error)
+            logger.error(
+                'service/MailService',
+                'Mail service connection verification failed:',
+                error
+            )
             return false
         }
     }
@@ -80,10 +85,10 @@ class Mailer {
                 html: options.html
             })
 
-            console.log('Email sent successfully:', info.messageId)
+            logger.info('service/MailService', 'Email sent successfully:', info.messageId)
             return true
         } catch (error) {
-            console.error('Failed to send email:', error)
+            logger.error('service/MailService', 'Failed to send email:', error)
             return false
         }
     }

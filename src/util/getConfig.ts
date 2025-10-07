@@ -1,3 +1,4 @@
+import { logger } from '@util/logger'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
@@ -16,7 +17,10 @@ export const appConfig = (
     configName = `APP_${configName}`
 
     if (!process.env[configName]) {
-        console.warn(`${configName} is not set using default value: ${defaultValue}`)
+        logger.warn(
+            'util/getConfig',
+            `${configName} is not set using default value: ${defaultValue}`
+        )
         process.env[configName] = String(defaultValue)
     }
 
@@ -35,7 +39,7 @@ export const appConfig = (
 export const getPrivateKey = () => {
     const privateKeyPath = path.join(__dirname, '../../keys/private.key')
     if (!fs.existsSync(privateKeyPath)) {
-        console.error('Private key file does not exist at:', privateKeyPath)
+        logger.critical('util/getConfig', 'Private key file does not exist at:', privateKeyPath)
         process.exit(1)
     }
     const privateKey = fs.readFileSync(privateKeyPath, 'utf-8')
@@ -62,7 +66,7 @@ export const verifyCriticalConfigs = () => {
 
     for (const config of criticalConfigs) {
         if (!process.env[config]) {
-            console.error(`Critical config ${config} is not set`)
+            logger.critical('util/getConfig', `Critical config ${config} is not set`)
             process.exit(1)
         }
     }

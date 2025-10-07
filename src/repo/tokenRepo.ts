@@ -1,5 +1,7 @@
 import { cache } from '@util/database'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
+import { error } from 'console'
 
 const introspectTokenExpireIn = Number(appConfig('TOKEN_INTROSPECT_EXPIRE', 'number'))
 
@@ -29,10 +31,10 @@ export const readToken = async (token: string): Promise<ReadTokenReturn> => {
             data: structureReturnData
         }
     } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error reading introspect token:', err)
+        logger.error('repo/TokenRepo', 'Error reading introspect token:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return { status: false, message: `readIntrospectToken: ${err}` }
-        }
+
         return { status: false, message: 'Failed to read introspect token' }
     }
 }
@@ -67,11 +69,11 @@ export const readIntrospectToken = async (token: string): Promise<ReadIntrospect
                 related_users_id: data.related_users_id
             }
         }
-    } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error reading introspect token:', err)
-            return { status: false, message: `readIntrospectToken: ${err}` }
-        }
+    } catch (error) {
+        logger.error('repo/TokenRepo', 'Error reading introspect token:', error)
+        if (appConfig('DEBUG', 'boolean'))
+            return { status: false, message: `readIntrospectToken: ${error}` }
+
         return { status: false, message: 'Failed to read introspect token' }
     }
 }
@@ -97,11 +99,11 @@ export const readBindToken = async (token: string): Promise<ReadBindTokenReturn>
         }
 
         return { status: true, data: { player_uuid } }
-    } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error reading bind token:', err)
-            return { status: false, message: `readBindToken: ${err}` }
-        }
+    } catch (error) {
+        logger.error('repo/TokenRepo', 'Error reading bind token:', error)
+        if (appConfig('DEBUG', 'boolean'))
+            return { status: false, message: `readBindToken: ${error}` }
+
         return { status: false, message: 'Failed to read bind token' }
     }
 }
@@ -124,11 +126,11 @@ export const insertToken = async (
         return {
             status: true
         }
-    } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error inserting introspect token:', err)
-            return { status: false, message: `insertIntrospectToken: ${err}` }
-        }
+    } catch (error) {
+        logger.error('repo/TokenRepo', 'Error inserting introspect token:', error)
+        if (appConfig('DEBUG', 'boolean'))
+            return { status: false, message: `insertIntrospectToken: ${error}` }
+
         return { status: false, message: 'Failed to insert introspect token' }
     }
 }
@@ -161,15 +163,15 @@ export const checkTokenExists = async (token: string): Promise<CheckTokenExistsR
             return { status: true, can_do_next: false, message: 'Token exists' }
         }
         return { status: true, can_do_next: true }
-    } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error when checking tokens', err)
+    } catch (error) {
+        logger.error('repo/TokenRepo', 'Error when checking tokens:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
                 can_do_next: false,
-                message: `checkTokenExists: ${err}`
+                message: `checkTokenExists: ${error}`
             }
-        }
+
         return { status: false, can_do_next: false, message: 'Error when checking tokens' }
     }
 }

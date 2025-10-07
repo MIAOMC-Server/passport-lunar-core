@@ -1,5 +1,6 @@
 import { db } from '@util/database/index'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 
 export const initDatabase = async () => {
     const prefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
@@ -82,11 +83,9 @@ export const initDatabase = async () => {
     for (const sql of StructureSql) {
         try {
             await db.query(sql)
-            if (appConfig('DEBUG', 'boolean')) {
-                console.log(`Table structure created/verified successfully`)
-            }
+            logger.debug('repo/InitDatabase', 'Ensured table exists or created it successfully')
         } catch (error) {
-            console.error(`Failed to create table:`, error)
+            logger.error('repo/InitDatabase', 'Failed to create table', error)
         }
     }
 
@@ -96,11 +95,9 @@ export const initDatabase = async () => {
             expectedTableStructure[table]
         )
         if (!isTableCorrect) {
-            console.error(`Table ${prefix}${table} structure is incorrect`)
+            logger.error('repo/InitDatabase', `Table ${prefix}${table} structure is incorrect`)
         } else {
-            if (appConfig('DEBUG', 'boolean')) {
-                console.log(`Table ${prefix}${table} structure is correct`)
-            }
+            logger.debug('repo/InitDatabase', `Table ${prefix}${table} structure is correct`)
         }
     }
 }
@@ -113,14 +110,14 @@ const checkTableColumns = async (
         const tableExistsResult = await db.query(`SHOW TABLES LIKE '${tableName}'`)
 
         if (!tableExistsResult || tableExistsResult.length === 0) {
-            console.error(`Error: Table ${tableName} does not exist`)
+            logger.error('repo/InitDatabase', `Error: Table ${tableName} does not exist`)
             return false
         }
 
         const columnsResult = await db.query(`DESCRIBE ${tableName}`)
 
         if (!columnsResult || !Array.isArray(columnsResult)) {
-            console.error(`Error: Unable to describe table ${tableName}`)
+            logger.error('repo/InitDatabase', `Error: Unable to describe table ${tableName}`)
             return false
         }
 
@@ -134,7 +131,8 @@ const checkTableColumns = async (
         }
 
         if (missingColumns.length > 0) {
-            console.error(
+            logger.error(
+                'repo/InitDatabase',
                 `Error: Table ${tableName} is missing columns: ${missingColumns.join(', ')}`
             )
             return false
@@ -142,14 +140,15 @@ const checkTableColumns = async (
 
         const extraColumns = existingColumns.filter((col: string) => !expectedColumns.includes(col))
         if (extraColumns.length > 0) {
-            console.warn(
+            logger.warn(
+                'repo/InitDatabase',
                 `Warning: Table ${tableName} has extra columns: ${extraColumns.join(', ')}`
             )
         }
 
         return true
     } catch (error) {
-        console.error(`Error checking table ${tableName}:`, error)
+        logger.error('repo/InitDatabase', `Error checking table ${tableName}:`, error)
         return false
     }
 }

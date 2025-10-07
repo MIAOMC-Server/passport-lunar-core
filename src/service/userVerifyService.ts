@@ -1,6 +1,7 @@
 import { getVerifierToken } from '@service/verifierTokenService'
 import { checkEmpty, isExpired } from '@util/commonUtils'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 import { verifierDecryptor } from '@util/verifierDecryptor'
 import crypto from 'crypto'
 
@@ -79,7 +80,7 @@ export const verifierService = async (
             }
         }
     } catch (error) {
-        console.error('Error in verifierService:', error)
+        logger.error('service/UserVerifyService', 'Error in verifierService:', error)
         return { status: false, message: 'Internal server error' }
     }
 }

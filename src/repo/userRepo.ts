@@ -1,6 +1,7 @@
 import { hashPassword } from '@service/passwordService'
 import { db } from '@util/database'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 
 const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
 
@@ -223,7 +224,7 @@ export const readUserPasswd = async (
             }
         }
     } catch (error) {
-        console.error(`Error reading user password:`, error)
+        logger.error('repo/UserRepo', 'Error reading user password:', error)
         return {
             status: false,
             message: `Failed to read user password`

@@ -1,5 +1,6 @@
 import { isJSON } from '@util/commonUtils'
 import { VerifierPrivateKey } from '@util/getConfig'
+import { logger } from '@util/logger'
 import crypto, { createDecipheriv } from 'crypto'
 
 interface AESDecryptorOption {
@@ -21,7 +22,7 @@ export class VerifierDecryptor {
             const step1 = Buffer.from(rawBase64, 'base64').toString('utf-8')
             const encryptedJSON = isJSON(step1)
             if (!encryptedJSON.status) {
-                return { status: false, message: 'Decryptor: Faild when processing JSON Parse' }
+                return { status: false, message: 'Decryptor: Failed when processing JSON Parse' }
             }
 
             const rawJSON = encryptedJSON.data
@@ -31,7 +32,7 @@ export class VerifierDecryptor {
             if (!step2.status || !step2.data) {
                 return {
                     status: false,
-                    message: step2.message || 'Decryptor: Faild when processing RSA decrypt'
+                    message: step2.message || 'Decryptor: Failed when processing RSA decrypt'
                 }
             }
 
@@ -59,7 +60,7 @@ export class VerifierDecryptor {
 
             const step3 = this.AESDecryptor(encryptedAESData, AESKey!, AESDecryptOptions)
             if (!step3.status || !step3.data) {
-                return { status: false, message: 'Decryptor: Faild when processing AES decrypt' }
+                return { status: false, message: 'Decryptor: Failed when processing AES decrypt' }
             }
 
             const decryptedBase64Data = step3.data
@@ -67,7 +68,7 @@ export class VerifierDecryptor {
             const decodedJSON = isJSON(Buffer.from(plainBase64Data, 'base64').toString('utf-8'))
 
             if (!decodedJSON.status) {
-                return { status: false, message: 'Decryptor: Faild when processing JSON Parse' }
+                return { status: false, message: 'Decryptor: Failed when processing JSON Parse' }
             }
 
             return {
@@ -75,7 +76,7 @@ export class VerifierDecryptor {
                 data: { plainBase64: plainBase64Data, plainJSON: decodedJSON.data }
             }
         } catch (error) {
-            console.error('Decryptor error:', error)
+            logger.error('service/VerifierDecryptor', 'Decryptor error:', error)
             return {
                 status: false,
                 message: 'Decryptor: Something went wrong, please try again later.'
@@ -100,7 +101,7 @@ export class VerifierDecryptor {
             }
             return { status: true, data: decryptedData }
         } catch (error) {
-            console.log(error)
+            logger.error('service/VerifierDecryptor', 'RSADecrypto error:', error)
             return { status: false, message: 'stage-RSADecrypt Error when decrypting data' }
         }
     }

@@ -1,5 +1,6 @@
 import type { TemplateDataMap, TemplateName } from '@templates/email/types'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 import { mailer } from '@util/mailer'
 import fs from 'fs/promises'
 import path from 'path'
@@ -47,8 +48,13 @@ class MailService {
             this.templateCache.set(templateName, template)
             return template
         } catch (error) {
-            console.error(`Failed to load template ${templateName}:`, error)
-            throw new Error(`模板 ${templateName} 加载失败`)
+            logger.error('service/MailService', `Failed to load template ${templateName}:`, error)
+            logger.critical(
+                'service/MailService',
+                `Failed to load template ${templateName}:`,
+                error
+            )
+            process.exit(1)
         }
     }
 
@@ -155,7 +161,11 @@ class MailService {
                 }
             }
         } catch (error) {
-            console.error(`Failed to send ${templateName} email to ${email}:`, error)
+            logger.error(
+                'service/MailService',
+                `Failed to send ${templateName} email to ${email}:`,
+                error
+            )
             return {
                 status: false,
                 message:
@@ -262,7 +272,7 @@ class MailService {
                 }
             }
         } catch (error) {
-            console.error('Mail service connection error:', error)
+            logger.error('service/MailService', 'Mail service connection error:', error)
             return {
                 status: false,
                 message: error instanceof Error ? error.message : 'Mail service connection failed',

@@ -1,4 +1,5 @@
 import { getAPIFullUrl } from '@util/infoAPI'
+import { logger } from '@util/logger'
 import axios from 'axios'
 
 interface ResponseData {
@@ -33,7 +34,7 @@ export const getVerifierToken = async (tuuid: string): Promise<getVerifierTokenR
             }
         }
     } catch (error) {
-        console.error('Error fetching data:', error)
+        logger.error('service/VerifierTokenService', 'Error fetching data:', error)
         return { status: false, message: 'Error fetching data(verifierToken)' }
     }
 }

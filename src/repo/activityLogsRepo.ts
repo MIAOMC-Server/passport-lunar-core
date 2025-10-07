@@ -1,5 +1,6 @@
 import { db } from '@util/database'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 
 const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
 
@@ -14,6 +15,6 @@ export const logActivity = async ({
         const sql = `INSERT INTO ${tablePrefix}activity_logs (user_id, activity) VALUES (?, ?)`
         await db.query(sql, [user_id, JSON.stringify(activity)])
     } catch (error) {
-        console.error('Error logging activity:', error)
+        logger.error('repo/ActivityLogsRepo', 'Error logging activity', error)
     }
 }

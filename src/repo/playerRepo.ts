@@ -1,5 +1,6 @@
 import { db } from '@util/database'
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 
 const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
 
@@ -38,13 +39,13 @@ export const readPlayerInfo = async (player_uuid: string): Promise<ReadPlayerInf
             }
         }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error reading player info:', error)
+        logger.error('repo/PlayerRepo', 'Error reading player info:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
                 message: `Error reading player info: ${error}`
             }
-        }
+
         return { status: false, message: 'Failed to read player info' }
     }
 }
@@ -82,13 +83,13 @@ export const insertPlayer = async (
             status: true
         }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error inserting player:', error)
+        logger.error('repo/PlayerRepo', 'Error inserting player:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
                 message: `Error inserting player: ${error}`
             }
-        }
+
         return {
             status: false,
             message: 'Failed to insert player'
@@ -105,17 +106,17 @@ export const isPlayerBinded = async (player_uuid: string): Promise<IsPlayerBinde
     try {
         const playerInfo = await readPlayerInfo(player_uuid)
         if (playerInfo.status && playerInfo.data?.user_id) {
-            return { status: true, is_bind: true, message: 'Player is binded' }
+            return { status: true, is_bind: true, message: 'Player is Bound' }
         }
-        return { status: true, is_bind: false, message: 'Player is not binded' }
+        return { status: true, is_bind: false, message: 'Player is not Bound' }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error checking player bind:', error)
+        logger.error('repo/PlayerRepo', 'Error checking player bind:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
                 message: `Error checking player bind: ${error}`
             }
-        }
+
         return { status: false, message: 'Error checking player bind' }
     }
 }
@@ -177,16 +178,16 @@ export const readUserBindedPlayers = async (
             )
         }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error reading user binded players:', error)
+        logger.error('repo/PlayerRepo', 'Error reading user bound players:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
-                message: `Error reading user binded players: ${error}`
+                message: `Error reading user bound players: ${error}`
             }
-        }
+
         return {
             status: false,
-            message: 'Error reading user binded players'
+            message: 'Error reading user bound players'
         }
     }
 }
@@ -205,13 +206,13 @@ export const unbindPlayer = async (player_uuid: string): Promise<UnbindPlayerRet
         }
         return { status: true }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error unbinding player:', error)
+        logger.error('repo/PlayerRepo', 'Error unbinding player:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
                 message: `Error unbinding player: ${error}`
             }
-        }
+
         return {
             status: false,
             message: 'Error unbinding player'

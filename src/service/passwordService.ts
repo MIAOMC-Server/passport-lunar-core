@@ -1,4 +1,5 @@
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 import bcrypt from 'bcrypt'
 
 interface HashPasswordReturn {
@@ -15,13 +16,13 @@ export const hashPassword = async (plain_passwd: string): Promise<HashPasswordRe
             data: hashedPassword
         }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error hashing password:', error)
+        logger.error('service/PasswordService', 'Error hashing password:', error)
+        if (appConfig('DEBUG', 'boolean'))
             return {
                 status: false,
                 message: `Error hashing password: ${error}`
             }
-        }
+
         return {
             status: false,
             message: 'Failed to hash password'
@@ -41,21 +42,19 @@ export const comparePassword = async (
     try {
         const isMatch = await bcrypt.compare(plain_passwd, hashed_passwd)
 
-        if (appConfig('DEBUG', 'boolean')) {
-            console.log('Comparing passwords:', {
-                plainLength: plain_passwd.length,
-                hashedLength: hashed_passwd.length,
-                hashedStart: hashed_passwd.substring(0, 10)
-            })
-            console.log('Password comparison result:', isMatch)
-        }
+        logger.debug('service/PasswordService', 'Comparing passwords:', {
+            plainLength: plain_passwd.length,
+            hashedLength: hashed_passwd.length,
+            hashedStart: hashed_passwd.substring(0, 10)
+        })
+        logger.debug('service/PasswordService', 'Password comparison result:', isMatch)
 
         return {
             status: isMatch
         }
     } catch (error) {
+        logger.error('service/PasswordService', 'Error comparing passwords:', error)
         if (appConfig('DEBUG', 'boolean')) {
-            console.error('Error comparing passwords:', error)
             return {
                 status: false,
                 message: `Error comparing passwords: ${error}`

@@ -1,4 +1,5 @@
 import { checkUserExists, insertUser, readUserInfo, readUserPasswd } from '@repo/userRepo'
+import { logger } from '@util/logger'
 
 interface CreateUserReturn {
     status: boolean
@@ -16,7 +17,7 @@ export const createUser = async (
         // 检查邮箱，用户名可用性
         const checkForExists = await checkUserExists({ email, username })
 
-        const checkresult = checkForExists.data ?? {
+        const checkResult = checkForExists.data ?? {
             is_email_exists: false,
             is_username_exists: false
         }
@@ -25,9 +26,9 @@ export const createUser = async (
             return {
                 status: false,
                 message:
-                    checkresult.is_email_exists && checkresult.is_username_exists
+                    checkResult.is_email_exists && checkResult.is_username_exists
                         ? 'Email and username are already taken'
-                        : checkresult.is_email_exists
+                        : checkResult.is_email_exists
                           ? 'Email is already taken'
                           : 'Username is already taken'
             }
@@ -49,7 +50,7 @@ export const createUser = async (
             }
         }
     } catch (error) {
-        console.error(`Error creating user:`, error)
+        logger.error('service/UserService', 'Error creating user:', error)
         return {
             status: false,
             message: `Failed to create user`
@@ -96,7 +97,7 @@ export const getUser = async (
             }
         }
     } catch (error) {
-        console.error(`Error getting user:`, error)
+        logger.error('service/UserService', 'Error getting user:', error)
         return {
             status: false,
             message: `Failed to get user`
@@ -134,7 +135,7 @@ export const getUserPasswd = async (
             }
         }
     } catch (error) {
-        console.error(`Error getting user password:`, error)
+        logger.error('service/UserService', 'Error getting user password:', error)
         return {
             status: false,
             message: `Failed to get user password`

@@ -1,4 +1,5 @@
 import { appConfig } from '@util/getConfig'
+import { logger } from '@util/logger'
 import { createClient, RedisClientOptions } from 'redis'
 
 const redisConfigs = {
@@ -37,17 +38,17 @@ class Redis {
 
     private setupEventHandlers(): void {
         this.client.on('connect', () => {
-            console.log('Redis client connected')
+            logger.info('service/Database', 'Redis client connected')
             this.isConnected = true
         })
 
         this.client.on('error', (error) => {
-            console.error('Redis client error:', error)
+            logger.error('service/Database', 'Redis client error:', error)
             this.isConnected = false
         })
 
         this.client.on('end', () => {
-            console.log('Redis client disconnected')
+            logger.info('service/Database', 'Redis client disconnected')
             this.isConnected = false
         })
     }
@@ -57,7 +58,7 @@ class Redis {
             try {
                 await this.client.connect()
             } catch (error) {
-                console.error('Failed to connect to Redis:', error)
+                logger.critical('service/Database', 'Failed to connect to Redis:', error)
                 throw error
             }
         }
@@ -72,7 +73,7 @@ class Redis {
         try {
             return await this.client.get(key)
         } catch (error) {
-            console.error('Redis GET error:', error)
+            logger.error('service/Database', 'Redis GET error:', error)
             throw error
         }
     }
@@ -82,7 +83,7 @@ class Redis {
         try {
             return await this.client.ttl(key)
         } catch (error) {
-            console.error('Redis TTL error:', error)
+            logger.error('service/Database', 'Redis TTL error:', error)
             throw error
         }
     }
@@ -93,7 +94,7 @@ class Redis {
             const result = await this.client.get(key)
             return result ? JSON.parse(result) : null
         } catch (error) {
-            console.error('Redis GET error:', error)
+            logger.error('service/Database', 'Redis GET error:', error)
             throw error
         }
     }
@@ -107,7 +108,7 @@ class Redis {
                 await this.client.set(key, value)
             }
         } catch (error) {
-            console.error('Redis SET error:', error)
+            logger.error('service/Database', 'Redis SET error:', error)
             throw error
         }
     }
@@ -117,7 +118,7 @@ class Redis {
         try {
             await this.client.del(key)
         } catch (error) {
-            console.error('Redis DEL error:', error)
+            logger.error('service/Database', 'Redis DEL error:', error)
             throw error
         }
     }
@@ -127,7 +128,7 @@ class Redis {
         try {
             await this.client.expire(key, expireIn)
         } catch (error) {
-            console.error('Redis RENEW error:', error)
+            logger.error('service/Database', 'Redis RENEW error:', error)
             throw error
         }
     }
@@ -171,7 +172,7 @@ class Redis {
         try {
             return await this.client.mGet(keys)
         } catch (error) {
-            console.error('Redis MGET error:', error)
+            logger.error('service/Database', 'Redis MGET error:', error)
             throw error
         }
     }
@@ -181,7 +182,7 @@ class Redis {
         try {
             await this.client.mSet(keyValuePairs)
         } catch (error) {
-            console.error('Redis MSET error:', error)
+            logger.error('service/Database', 'Redis MSET error:', error)
             throw error
         }
     }
