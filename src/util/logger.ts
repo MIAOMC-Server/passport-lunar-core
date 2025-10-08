@@ -5,7 +5,7 @@ type ArgType = string | object | JSON | boolean | number | null | undefined | un
 
 class Loggers {
     private appLogLevel: number
-    private appDebug: boolean = appConfig('DEBUG', 'boolean') as boolean
+    private appDebug: boolean
     private static levels = { CRITICAL: 1000, ERROR: 900, WARN: 800, INFO: 100, DEBUG: 0 }
     private static logColors = {
         CRITICAL: '\x1b[35m',
@@ -16,6 +16,7 @@ class Loggers {
     }
 
     constructor() {
+        this.appDebug = (appConfig('APP_DEBUG', 'boolean') as boolean) || false
         const checkLogLevel = () => {
             const level = appConfig('LOG_LEVEL', 'string') as string
             if (this.appDebug === true) {
