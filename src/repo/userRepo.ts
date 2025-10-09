@@ -3,9 +3,9 @@ import { db } from '@util/database'
 import { appConfig } from '@util/getConfig'
 import { logger } from '@util/logger'
 
-const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
+const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string', '')
 
-// Start User Oprations
+// Start User operations
 interface InsertUserReturn {
     status: boolean
     message?: string
@@ -50,7 +50,7 @@ export const insertUser = async (
             data: { user_id }
         }
     } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean', false)) {
             return { status: false, message: 'internal error: ' + err }
         }
         return { status: false, message: 'Internal Error' }

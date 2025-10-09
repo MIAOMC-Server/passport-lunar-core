@@ -32,7 +32,7 @@ export const readToken = async (token: string): Promise<ReadTokenReturn> => {
         }
     } catch (err) {
         logger.error('repo/TokenRepo', 'Error reading introspect token:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return { status: false, message: `readIntrospectToken: ${err}` }
 
         return { status: false, message: 'Failed to read introspect token' }
@@ -71,7 +71,7 @@ export const readIntrospectToken = async (token: string): Promise<ReadIntrospect
         }
     } catch (error) {
         logger.error('repo/TokenRepo', 'Error reading introspect token:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return { status: false, message: `readIntrospectToken: ${error}` }
 
         return { status: false, message: 'Failed to read introspect token' }
@@ -101,7 +101,7 @@ export const readBindToken = async (token: string): Promise<ReadBindTokenReturn>
         return { status: true, data: { player_uuid } }
     } catch (error) {
         logger.error('repo/TokenRepo', 'Error reading bind token:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return { status: false, message: `readBindToken: ${error}` }
 
         return { status: false, message: 'Failed to read bind token' }
@@ -128,7 +128,7 @@ export const insertToken = async (
         }
     } catch (error) {
         logger.error('repo/TokenRepo', 'Error inserting introspect token:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return { status: false, message: `insertIntrospectToken: ${error}` }
 
         return { status: false, message: 'Failed to insert introspect token' }
@@ -165,7 +165,7 @@ export const checkTokenExists = async (token: string): Promise<CheckTokenExistsR
         return { status: true, can_do_next: true }
     } catch (error) {
         logger.error('repo/TokenRepo', 'Error when checking tokens:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 can_do_next: false,
@@ -201,7 +201,7 @@ export const renewIntrospectToken = async (token: string): Promise<RenewIntrospe
             }
         }
     } catch (err) {
-        if (appConfig('DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean', false)) {
             return { status: false, need_refresh: false, message: 'internal error: ' + err }
         }
         return { status: false, need_refresh: false, message: 'Internal Error' }
@@ -223,7 +223,7 @@ export const insertMailVerificationCode = async (
     } catch (err) {
         return {
             status: false,
-            message: appConfig('DEBUG', 'boolean')
+            message: appConfig('DEBUG', 'boolean', false)
                 ? (err as string)
                 : 'Error when insert verify code'
         }
@@ -253,7 +253,7 @@ export const readMailVerificationCode = async (
     } catch (err) {
         return {
             status: false,
-            message: appConfig('DEBUG', 'boolean')
+            message: appConfig('DEBUG', 'boolean', false)
                 ? (err as string)
                 : 'Error when reading verify code'
         }

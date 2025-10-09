@@ -9,7 +9,7 @@ interface HashPasswordReturn {
 }
 export const hashPassword = async (plain_passwd: string): Promise<HashPasswordReturn> => {
     try {
-        const saltRounds = appConfig('SALT_ROUNDS', 'number')
+        const saltRounds = appConfig('SALT_ROUNDS', 'number', 10)
         const hashedPassword = await bcrypt.hash(plain_passwd, saltRounds as number)
         return {
             status: true,
@@ -17,7 +17,7 @@ export const hashPassword = async (plain_passwd: string): Promise<HashPasswordRe
         }
     } catch (error) {
         logger.error('service/PasswordService', 'Error hashing password:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error hashing password: ${error}`
@@ -54,12 +54,12 @@ export const comparePassword = async (
         }
     } catch (error) {
         logger.error('service/PasswordService', 'Error comparing passwords:', error)
-        if (appConfig('DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error comparing passwords: ${error}`
             }
-        }
+
         return {
             status: false,
             message: 'Failed to compare passwords'

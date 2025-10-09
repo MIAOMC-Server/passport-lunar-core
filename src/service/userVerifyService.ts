@@ -59,7 +59,7 @@ export const verifierService = async (
         }
 
         const hashAlgorithm = 'sha256'
-        const salt = appConfig('VERIFIER_SALT', 'string')
+        const salt = appConfig('VERIFIER_SALT', 'string', '')
         const dataToHash = `${plainBase64}${remoteData.token}${salt}`
 
         const calculatedHash = crypto

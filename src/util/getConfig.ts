@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const timestamp = new Date().toISOString()
 
 dotenv.config()
 
@@ -17,7 +18,8 @@ export const appConfig = (
 
     if (!process.env[configName]) {
         console.warn(
-            `[WARN] [util/getConfig] ${configName} is not set using default value: ${defaultValue}`
+            '\x1b[33m' +
+                `[${timestamp}] [WARN] [util/getConfig] ${configName} is not set using default value: ${defaultValue}`
         )
         process.env[configName] = String(defaultValue)
     }
@@ -38,7 +40,8 @@ export const getPrivateKey = () => {
     const privateKeyPath = path.join(__dirname, '../../keys/private.key')
     if (!fs.existsSync(privateKeyPath)) {
         console.error(
-            `[Critical] [util/getConfig] Private key file does not exist at: ${privateKeyPath}`
+            '\x1b[35m' +
+                `[${timestamp}] [CRITICAL] [util/getConfig] Private key file does not exist at: ${privateKeyPath}`
         )
         process.exit(1)
     }
@@ -66,7 +69,10 @@ export const verifyCriticalConfigs = () => {
 
     for (const config of criticalConfigs) {
         if (!process.env[config]) {
-            console.error(`[Critical] [util/getConfig] Critical config ${config} is not set`)
+            console.error(
+                '\x1b[35m' +
+                    `[${timestamp}] [CRITICAL] [util/getConfig] Critical config ${config} is not set`
+            )
             process.exit(1)
         }
     }

@@ -2,7 +2,7 @@ import { db } from '@util/database'
 import { appConfig } from '@util/getConfig'
 import { logger } from '@util/logger'
 
-const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
+const tablePrefix = appConfig('DATABASE_TABLE_PREFIX', 'string', '')
 
 // Start Player operations
 interface ReadPlayerInfoReturn {
@@ -40,7 +40,7 @@ export const readPlayerInfo = async (player_uuid: string): Promise<ReadPlayerInf
         }
     } catch (error) {
         logger.error('repo/PlayerRepo', 'Error reading player info:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error reading player info: ${error}`
@@ -84,7 +84,7 @@ export const insertPlayer = async (
         }
     } catch (error) {
         logger.error('repo/PlayerRepo', 'Error inserting player:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error inserting player: ${error}`
@@ -111,7 +111,7 @@ export const isPlayerBinded = async (player_uuid: string): Promise<IsPlayerBinde
         return { status: true, is_bind: false, message: 'Player is not Bound' }
     } catch (error) {
         logger.error('repo/PlayerRepo', 'Error checking player bind:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error checking player bind: ${error}`
@@ -179,7 +179,7 @@ export const readUserBindedPlayers = async (
         }
     } catch (error) {
         logger.error('repo/PlayerRepo', 'Error reading user bound players:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error reading user bound players: ${error}`
@@ -207,7 +207,7 @@ export const unbindPlayer = async (player_uuid: string): Promise<UnbindPlayerRet
         return { status: true }
     } catch (error) {
         logger.error('repo/PlayerRepo', 'Error unbinding player:', error)
-        if (appConfig('DEBUG', 'boolean'))
+        if (appConfig('DEBUG', 'boolean', false))
             return {
                 status: false,
                 message: `Error unbinding player: ${error}`

@@ -17,14 +17,14 @@ class Mailer {
      */
     private loadConfig(): MailConfig {
         return {
-            host: (appConfig('MAIL_HOST', 'string') as string) || 'localhost',
-            port: (appConfig('MAIL_PORT', 'number') as number) || 587,
-            secure: (appConfig('MAIL_SECURE', 'boolean') as boolean) || false,
+            host: appConfig('MAIL_HOST', 'string', 'localhost') as string,
+            port: appConfig('MAIL_PORT', 'number', 587) as number,
+            secure: appConfig('MAIL_SECURE', 'boolean', false) as boolean,
             auth: {
-                user: (appConfig('MAIL_USER', 'string') as string) || '',
-                pass: (appConfig('MAIL_PASSWORD', 'string') as string) || ''
+                user: appConfig('MAIL_USER', 'string', '') as string,
+                pass: appConfig('MAIL_PASSWORD', 'string', '') as string
             },
-            from: (appConfig('MAIL_FROM', 'string') as string) || ''
+            from: appConfig('MAIL_FROM', 'string', '') as string
         }
     }
 

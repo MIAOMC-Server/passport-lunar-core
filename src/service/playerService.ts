@@ -35,7 +35,7 @@ export const createPlayer = async (
             status: true
         }
     } catch (error) {
-        if (appConfig('APP_DEBUG', 'boolean')) {
+        if (appConfig('APP_DEBUG', 'boolean', false)) {
             return { status: false, message: `Something went wrong when create player: ${error}` }
         }
         return {
@@ -70,7 +70,7 @@ export const processPlayerNext = async (player_uuid: string): Promise<ProcessPla
         return {
             status: false,
             next: 'Failed',
-            message: appConfig('APP_DEBUG', 'boolean')
+            message: appConfig('APP_DEBUG', 'boolean', false)
                 ? playerBinded.message
                 : 'Error when checking player bind status'
         }
@@ -90,7 +90,7 @@ export const processPlayerNext = async (player_uuid: string): Promise<ProcessPla
         return {
             status: false,
             next: 'Failed',
-            message: appConfig('APP_DEBUG', 'boolean')
+            message: appConfig('APP_DEBUG', 'boolean', false)
                 ? playerInfo.message
                 : 'Error when reading player info'
         }
@@ -106,7 +106,7 @@ export const processPlayerNext = async (player_uuid: string): Promise<ProcessPla
             return {
                 status: false,
                 next: 'Failed',
-                message: appConfig('APP_DEBUG', 'boolean')
+                message: appConfig('APP_DEBUG', 'boolean', false)
                     ? bindedPlayers.message
                     : 'Error when reading binded players'
             }

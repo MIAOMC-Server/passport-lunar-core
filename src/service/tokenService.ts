@@ -62,7 +62,7 @@ export const genBindToken = async (
             }
         }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean', false)) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }
@@ -88,7 +88,7 @@ export const verifyBindToken = async (token: string): Promise<VerifyBindTokenRet
 
         return { status: true, data: { bindData } }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean', false)) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }
@@ -161,7 +161,7 @@ export const genIntrospectToken = async (
             }
         }
     } catch (error) {
-        if (appConfig('DEBUG', 'boolean')) {
+        if (appConfig('DEBUG', 'boolean', false)) {
             return { status: false, message: 'internal error: ' + error }
         }
         return { status: false, message: 'Internal Error' }

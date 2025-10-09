@@ -34,13 +34,13 @@ loginRouter.post('/login', async (req, res) => {
         status: true,
         data: {
             user_id: passwdValid.data.user_id,
-            itoken: introspectToken.data
+            token: introspectToken.data
         }
     })
 })
 
 loginRouter.post('/register', async (req, res) => {
-    if (!appConfig('USER_ALLOW_REGISTER', 'boolean')) {
+    if (!appConfig('USER_ALLOW_REGISTER', 'boolean', true)) {
         return res.status(403).json({
             status: false,
             is_closed: true,

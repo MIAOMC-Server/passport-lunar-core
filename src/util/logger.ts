@@ -16,9 +16,9 @@ class Loggers {
     }
 
     constructor() {
-        this.appDebug = (appConfig('APP_DEBUG', 'boolean') as boolean) || false
+        this.appDebug = (appConfig('DEBUG', 'boolean', false) as boolean) || false
         const checkLogLevel = () => {
-            const level = appConfig('LOG_LEVEL', 'string') as string
+            const level = appConfig('LOG_LEVEL', 'string', 'INFO') as string
             if (this.appDebug === true) {
                 return 0
             }
@@ -79,7 +79,8 @@ class Loggers {
             return
         }
         const timestamp = new Date().toISOString()
-        const formattedMessage = `[${timestamp}] [${domain}] [${level}] ${message} ${arg ? `\n\nDETAILS: \n${arg}` : ''}`
+        const domainStr = this.appDebug ? ` [${domain}] ` : ' '
+        const formattedMessage = `[${timestamp}] [${level}]${domainStr}${message} ${arg ? `${arg}` : ''}`
         const color = Loggers.logColors[level as keyof typeof Loggers.logColors] || '\x1b[0m'
         console.log(color + formattedMessage + '\x1b[0m')
     }

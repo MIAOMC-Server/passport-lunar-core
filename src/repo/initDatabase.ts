@@ -3,7 +3,7 @@ import { appConfig } from '@util/getConfig'
 import { logger } from '@util/logger'
 
 export const initDatabase = async () => {
-    const prefix = appConfig('DATABASE_TABLE_PREFIX', 'string')
+    const prefix = appConfig('DATABASE_TABLE_PREFIX', 'string', '')
 
     const expectedTables = [`users`, `players`, `login_logs`, `activity_logs`] as const
 

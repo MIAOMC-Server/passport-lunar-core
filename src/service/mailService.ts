@@ -87,7 +87,7 @@ class MailService {
      */
     private getBaseTemplateData() {
         return {
-            serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
+            serviceName: appConfig('SERVICE_NAME', 'string', 'MIAOMC Passport'),
             currentYear: new Date().getFullYear()
         }
     }
@@ -189,7 +189,7 @@ class MailService {
         expirationMinutes: number = 15
     ): Promise<MailServiceReturn> {
         return this.sendMail(email, 'verificationCode', {
-            serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
+            serviceName: appConfig('SERVICE_NAME', 'string', 'MIAOMC Passport') as string,
             currentYear: new Date().getFullYear(),
             username,
             verificationCode,
@@ -207,7 +207,7 @@ class MailService {
         expirationHours: number = 24
     ): Promise<MailServiceReturn> {
         return this.sendMail(email, 'passwordReset', {
-            serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
+            serviceName: appConfig('SERVICE_NAME', 'string', 'MIAOMC Passport') as string,
             currentYear: new Date().getFullYear(),
             username,
             resetLink,
@@ -231,7 +231,7 @@ class MailService {
         }
     ): Promise<MailServiceReturn> {
         return this.sendMail(email, 'notification', {
-            serviceName: (appConfig('SERVICE_NAME', 'string') as string) || 'MIAOMC Passport',
+            serviceName: appConfig('SERVICE_NAME', 'string', 'MIAOMC Passport') as string,
             currentYear: new Date().getFullYear(),
             title,
             greeting,
